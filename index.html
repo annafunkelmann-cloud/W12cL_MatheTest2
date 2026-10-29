@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testlauf: Mini-Quiz</title>
+<style>
+  :root { --bg:#f6f7fb; --card:#fff; --ink:#1f2430; --accent:#2f5bea; --ok:#1e8e4e; --bad:#c0392b; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
+  main { max-width:640px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:1.5rem; margin:0 0 4px; }
+  .sub { color:#5b6475; margin:0 0 20px; }
+  .card { background:var(--card); border-radius:12px; padding:16px 18px; margin-bottom:16px; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+  .q { font-weight:600; margin:0 0 10px; }
+  .opts { display:grid; gap:8px; }
+  button.opt { text-align:left; padding:10px 12px; border:2px solid #d5d9e4; border-radius:8px; background:#fff; font-size:1rem; cursor:pointer; }
+  button.opt:hover:not(:disabled) { border-color:var(--accent); }
+  button.opt.ok { border-color:var(--ok); background:#e8f6ee; }
+  button.opt.bad { border-color:var(--bad); background:#fcebe9; }
+  .fb { margin:10px 0 0; min-height:1.4em; font-size:.95rem; }
+  .score { font-size:1.1rem; font-weight:600; }
+  .reset { padding:10px 16px; border:0; border-radius:8px; background:var(--accent); color:#fff; font-size:1rem; cursor:pointer; }
+  .note { font-size:.85rem; color:#5b6475; margin-top:24px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Mini-Quiz: Ableiten und Integrieren</h1>
+  <p class="sub">Klicken Sie die richtige Antwort an. Sie erhalten sofort eine Rückmeldung.</p>
+
+  <div id="quiz"></div>
+
+  <div class="card">
+    <p class="score" id="score">Punkte: 0 von 3</p>
+    <button class="reset" id="reset">Nochmal versuchen</button>
+  </div>
+
+  <p class="note">Testseite: Wenn Sie das hier sehen und die Buttons funktionieren, hat das Hosting geklappt.</p>
+</main>
+
+<script>
+const fragen = [
+  { q: "Wie lautet die Ableitung von f(x) = x³ ?",
+    a: ["f'(x) = 3x²", "f'(x) = x²", "f'(x) = 3x³", "f'(x) = 2x³"], richtig: 0,
+    hinweis: "Potenzregel: Exponent nach vorne, Exponent um 1 verringern." },
+  { q: "Wie lautet die Ableitung von f(x) = sin(x) ?",
+    a: ["−cos(x)", "cos(x)", "−sin(x)", "tan(x)"], richtig: 1,
+    hinweis: "Die Ableitung des Sinus ist der Kosinus." },
+  { q: "Welche Stammfunktion hat f(x) = 2x ?",
+    a: ["F(x) = 2", "F(x) = x² + C", "F(x) = 2x² + C", "F(x) = x + C"], richtig: 1,
+    hinweis: "Probe: Leiten Sie Ihr Ergebnis wieder ab. Kommt 2x heraus?" }
+];
+
+let punkte = 0, beantwortet = 0;
+const quiz = document.getElementById("quiz");
+const scoreEl = document.getElementById("score");
+
+function aufbauen() {
+  quiz.innerHTML = ""; punkte = 0; beantwortet = 0; update();
+  fragen.forEach((f, i) => {
+    const card = document.createElement("div"); card.className = "card";
+    const q = document.createElement("p"); q.className = "q"; q.textContent = (i+1) + ". " + f.q;
+    const opts = document.createElement("div"); opts.className = "opts";
+    const fb = document.createElement("p"); fb.className = "fb"; fb.setAttribute("aria-live","polite");
+    f.a.forEach((text, j) => {
+      const b = document.createElement("button"); b.className = "opt"; b.textContent = text;
+      b.addEventListener("click", () => {
+        const knoepfe = opts.querySelectorAll("button");
+        knoepfe.forEach(k => k.disabled = true);
+        beantwortet++;
+        if (j === f.richtig) { b.classList.add("ok"); fb.textContent = "✔ Richtig!"; fb.style.color = "var(--ok)"; punkte++; }
+        else { b.classList.add("bad"); knoepfe[f.richtig].classList.add("ok"); fb.textContent = "✘ Nicht ganz. Tipp: " + f.hinweis; fb.style.color = "var(--bad)"; }
+        update();
+      });
+      opts.appendChild(b);
+    });
+    card.append(q, opts, fb); quiz.appendChild(card);
+  });
+}
+
+function update() {
+  scoreEl.textContent = "Punkte: " + punkte + " von " + fragen.length +
+    (beantwortet === fragen.length ? " – geschafft!" : "");
+}
+
+document.getElementById("reset").addEventListener("click", aufbauen);
+aufbauen();
+</script>
+</body>
+</html>
